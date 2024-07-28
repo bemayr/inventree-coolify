@@ -75,11 +75,13 @@ services:
       INVENTREE_SITE_URL: '${INVENTREE_SITE_URL}'
     volumes:
       - './Caddyfile:/etc/caddy/Caddyfile:ro,z'
-      - 'inventree_data/static:/var/www/static:z'
-      - 'inventree_data/media:/var/www/media:z'
+      - 'inventree_static:/var/www/static:z'
+      - 'inventree_media:/var/www/media:z'
       - 'inventree_data:/var/log:z'
       - 'inventree_data:/data:z'
       - 'inventree_data:/config:z'
 
 volumes:
   inventree_data:
+  inventree_static:
+  inventree_media:
