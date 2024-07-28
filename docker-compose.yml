@@ -1,0 +1,82 @@
+version: '3.8'
+services:
+  inventree-db:
+    image: 'postgres:13'
+    container_name: inventree-db
+    expose:
+      - '${INVENTREE_DB_PORT:-5432}/tcp'
+    environment:
+      - PGDATA=/var/lib/postgresql/data/pgdb
+      - "POSTGRES_USER=${INVENTREE_DB_USER:?You must provide the 'INVENTREE_DB_USER' variable in the .env file}"
+      - "POSTGRES_PASSWORD=${INVENTREE_DB_PASSWORD:?You must provide the 'INVENTREE_DB_PASSWORD' variable in the .env file}"
+      - "POSTGRES_DB=${INVENTREE_DB_NAME:?You must provide the 'INVENTREE_DB_NAME' variable in the .env file}"
+    volumes:
+      - "${INVENTREE_EXT_VOLUME:?You must specify the 'INVENTREE_EXT_VOLUME' variable in the .env file!}:/var/lib/postgresql/data/:z"
+    restart: unless-stopped
+  inventree-server:
+    image: 'inventree/inventree:latest'
+    container_name: inventree-server
+    expose:
+      - 8000
+    depends_on:
+      - inventree-db
+    environment:
+      INVENTREE_DEBUG: '${INVENTREE_DEBUG}'
+      INVENTREE_LOG_LEVEL: '${INVENTREE_LOG_LEVEL}'
+      INVENTREE_ADMIN_USER: '${INVENTREE_ADMIN_USER}'
+      INVENTREE_ADMIN_PASSWORD: '${INVENTREE_ADMIN_PASSWORD}'
+      INVENTREE_ADMIN_EMAIL: '${INVENTREE_ADMIN_EMAIL}'
+      INVENTREE_DB_ENGINE: '${INVENTREE_DB_ENGINE}'
+      INVENTREE_DB_NAME: '${INVENTREE_DB_NAME}'
+      INVENTREE_DB_HOST: '${INVENTREE_DB_HOST}'
+      INVENTREE_DB_PORT: '${INVENTREE_DB_PORT}'
+      INVENTREE_DB_USER: '${INVENTREE_DB_USER}'
+      INVENTREE_DB_PASSWORD: '${INVENTREE_DB_PASSWORD}'
+      INVENTREE_PLUGINS_ENABLED: '${INVENTREE_PLUGINS_ENABLED}'
+      INVENTREE_AUTO_UPDATE: '${INVENTREE_AUTO_UPDATE}'
+      INVENTREE_SITE_URL: '${INVENTREE_SITE_URL}'
+    volumes:
+      - '${INVENTREE_EXT_VOLUME}:/home/inventree/data:z'
+    restart: unless-stopped
+  inventree-worker:
+    image: 'inventree/inventree:${INVENTREE_TAG:-stable}'
+    container_name: inventree-worker
+    command: 'invoke worker'
+    depends_on:
+      - inventree-server
+    environment:
+      INVENTREE_DEBUG: '${INVENTREE_DEBUG}'
+      INVENTREE_LOG_LEVEL: '${INVENTREE_LOG_LEVEL}'
+      INVENTREE_DB_ENGINE: '${INVENTREE_DB_ENGINE}'
+      INVENTREE_DB_NAME: '${INVENTREE_DB_NAME}'
+      INVENTREE_DB_HOST: '${INVENTREE_DB_HOST}'
+      INVENTREE_DB_PORT: '${INVENTREE_DB_PORT}'
+      INVENTREE_DB_USER: '${INVENTREE_DB_USER}'
+      INVENTREE_DB_PASSWORD: '${INVENTREE_DB_PASSWORD}'
+      INVENTREE_SITE_URL: '${INVENTREE_SITE_URL}'
+    volumes:
+      - '${INVENTREE_EXT_VOLUME}:/home/inventree/data:z'
+    restart: unless-stopped
+  inventree-proxy:
+    container_name: inventree-proxy
+    image: 'caddy:alpine'
+    restart: always
+    depends_on:
+      - inventree-server
+    ports:
+      - '${INVENTREE_WEB_PORT:-80}:80'
+      - '443:443'
+    environment:
+      INVENTREE_DEBUG: '${INVENTREE_DEBUG}'
+      INVENTREE_LOG_LEVEL: '${INVENTREE_LOG_LEVEL}'
+      INVENTREE_DB_PASSWORD: '${INVENTREE_DB_PASSWORD}'
+      INVENTREE_PLUGINS_ENABLED: '${INVENTREE_PLUGINS_ENABLED}'
+      INVENTREE_AUTO_UPDATE: '${INVENTREE_AUTO_UPDATE}'
+      INVENTREE_SITE_URL: '${INVENTREE_SITE_URL}'
+    volumes:
+      - './Caddyfile:/etc/caddy/Caddyfile:ro,z'
+      - '${INVENTREE_EXT_VOLUME}/static:/var/www/static:z'
+      - '${INVENTREE_EXT_VOLUME}/media:/var/www/media:z'
+      - '${INVENTREE_EXT_VOLUME}:/var/log:z'
+      - '${INVENTREE_EXT_VOLUME}:/data:z'
+      - '${INVENTREE_EXT_VOLUME}:/config:z'
