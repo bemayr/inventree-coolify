@@ -39,7 +39,7 @@ services:
       - 'inventree_data:/home/inventree/data:z'
     restart: unless-stopped
   inventree-worker:
-    image: 'inventree/inventree:${INVENTREE_TAG:-stable}'
+    image: 'inventree/inventree:latest'
     container_name: inventree-worker
     command: 'invoke worker'
     depends_on:
