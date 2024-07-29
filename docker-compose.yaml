@@ -1,4 +1,10 @@
 version: '3.8'
+
+volumes:
+  inventree_data:
+  inventree_static:
+  inventree_media:
+
 services:
   inventree-db:
     image: 'postgres:13'
@@ -11,8 +17,9 @@ services:
       - "POSTGRES_PASSWORD=${INVENTREE_DB_PASSWORD:?You must provide the 'INVENTREE_DB_PASSWORD' variable in the .env file}"
       - "POSTGRES_DB=${INVENTREE_DB_NAME:?You must provide the 'INVENTREE_DB_NAME' variable in the .env file}"
     volumes:
-      - "inventree_data:/var/lib/postgresql/data/:z"
+      - 'inventree_data:/var/lib/postgresql/data/'
     restart: unless-stopped
+
   inventree-server:
     image: 'inventree/inventree:latest'
     container_name: inventree-server
@@ -36,8 +43,11 @@ services:
       INVENTREE_AUTO_UPDATE: '${INVENTREE_AUTO_UPDATE}'
       INVENTREE_SITE_URL: '${INVENTREE_SITE_URL}'
     volumes:
-      - 'inventree_data:/home/inventree/data:z'
+      - 'inventree_data:/home/inventree/data'
+      - 'inventree_media:/home/inventree/data/media'
+      - 'inventree_static:/home/inventree/data/static'
     restart: unless-stopped
+
   inventree-worker:
     image: 'inventree/inventree:latest'
     container_name: inventree-worker
@@ -55,8 +65,9 @@ services:
       INVENTREE_DB_PASSWORD: '${INVENTREE_DB_PASSWORD}'
       INVENTREE_SITE_URL: '${INVENTREE_SITE_URL}'
     volumes:
-      - 'inventree_data:/home/inventree/data:z'
+      - 'inventree_data:/home/inventree/data'
     restart: unless-stopped
+
   inventree-proxy:
     container_name: inventree-proxy
     image: 'caddy:alpine'
@@ -73,14 +84,9 @@ services:
       INVENTREE_AUTO_UPDATE: '${INVENTREE_AUTO_UPDATE}'
       INVENTREE_SITE_URL: '${INVENTREE_SITE_URL}'
     volumes:
-      - './Caddyfile:/etc/caddy/Caddyfile:ro,z'
-      - 'inventree_static:/var/www/static:z'
-      - 'inventree_media:/var/www/media:z'
-      - 'inventree_data:/var/log:z'
-      - 'inventree_data:/data:z'
-      - 'inventree_data:/config:z'
-
-volumes:
-  inventree_data:
-  inventree_static:
-  inventree_media:
+      - './Caddyfile:/etc/caddy/Caddyfile'
+      - 'inventree_data:/var/log'
+      - 'inventree_data:/data'
+      - 'inventree_data:/config'
+      - 'inventree_media:/var/www/media'
+      - 'inventree_static:/var/www/static'
