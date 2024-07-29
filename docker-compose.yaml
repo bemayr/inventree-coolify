@@ -75,7 +75,7 @@ services:
     depends_on:
       - inventree-server
     expose:
-      - ${INVENTREE_WEB_PORT:-80}:80
+      - 80
     environment:
       INVENTREE_SITE_URL: '${INVENTREE_SITE_URL}'
     volumes:
