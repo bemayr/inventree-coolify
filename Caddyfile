@@ -25,8 +25,8 @@
 	}
 }
 
-# Change the host to your domain (this will serve at inventree.localhost)
-http://localhost {
+# Accept all incoming connections on HTTP standard port 80 
+http:// {
 	import log_common inventree
 
 	encode gzip
