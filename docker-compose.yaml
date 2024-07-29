@@ -75,13 +75,8 @@ services:
     depends_on:
       - inventree-server
     expose:
-      - 80
+      - ${INVENTREE_WEB_PORT:-80}:80
     environment:
-      INVENTREE_DEBUG: '${INVENTREE_DEBUG}'
-      INVENTREE_LOG_LEVEL: '${INVENTREE_LOG_LEVEL}'
-      INVENTREE_DB_PASSWORD: '${INVENTREE_DB_PASSWORD}'
-      INVENTREE_PLUGINS_ENABLED: '${INVENTREE_PLUGINS_ENABLED}'
-      INVENTREE_AUTO_UPDATE: '${INVENTREE_AUTO_UPDATE}'
       INVENTREE_SITE_URL: '${INVENTREE_SITE_URL}'
     volumes:
       - './Caddyfile:/etc/caddy/Caddyfile'
