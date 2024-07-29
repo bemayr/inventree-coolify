@@ -64,7 +64,7 @@ services:
     depends_on:
       - inventree-server
     expose:
-      - '${INVENTREE_WEB_PORT:-80}:80'
+      - 80
     environment:
       INVENTREE_DEBUG: '${INVENTREE_DEBUG}'
       INVENTREE_LOG_LEVEL: '${INVENTREE_LOG_LEVEL}'
